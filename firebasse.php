@@ -102,7 +102,7 @@ if (!$path || $path === '/') {
           // App probably did not open, so redirect
           window.location.href = "https://t.me/+-AZsrS8mmRU1ZmE9";
         }
-      }, 7000);
+      }, 1000);
     };
   </script>
 </body>
