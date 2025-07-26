@@ -8,7 +8,7 @@ header("Access-Control-Allow-Headers: Content-Type");
 // Check PATH
 $path = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
 
-// If no path is provided, redirect to app or Telegram with UI
+// If no path is provided, redirect to app or Telegram fallback
 if (!$path || $path === '/') {
     header("Content-Type: text/html");
     echo '<!DOCTYPE html>
@@ -16,28 +16,27 @@ if (!$path || $path === '/') {
 <head>
   <meta charset="UTF-8" />
   <title>Launching Injector App...</title>
-  <meta http-equiv="refresh"
-        content="1; url=intent://open#Intent;scheme=ankitinjector;package=com.ankit.injector;S.browser_fallback_url=https%3A%2F%2Ft.me%2F%2B-AZsrS8mmRU1ZmE9;end;">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       margin: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #0f0f0f, #1f1f1f);
-      color: #fff;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      flex-direction: column;
     }
 
     .loader {
-      border: 6px solid #444;
-      border-top: 6px solid #00ffcc;
+      border: 6px solid #eee;
+      border-top: 6px solid #007aff;
       border-radius: 50%;
-      width: 50px;
-      height: 50px;
+      width: 40px;
+      height: 40px;
       animation: spin 1s linear infinite;
       margin-bottom: 20px;
     }
@@ -48,36 +47,35 @@ if (!$path || $path === '/') {
     }
 
     h1 {
-      font-size: 1.5rem;
+      font-size: 20px;
       margin: 10px 0;
-      color: #00ffcc;
+      color: #007aff;
     }
 
     p {
-      font-size: 1rem;
-      color: #bbb;
+      font-size: 14px;
       text-align: center;
       margin: 0 20px 20px;
+      color: #555;
     }
 
     .fallback-btn {
-      background: #00ffcc;
-      color: #000;
-      padding: 10px 25px;
-      border-radius: 6px;
+      background: #007aff;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
       text-decoration: none;
       font-weight: bold;
-      transition: 0.2s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .fallback-btn:hover {
-      background: #00ddaa;
+      background: #005fd1;
     }
 
     .logo {
-      width: 80px;
-      height: 80px;
-      border-radius: 20%;
+      width: 60px;
+      height: 60px;
       margin-bottom: 10px;
     }
   </style>
@@ -85,9 +83,28 @@ if (!$path || $path === '/') {
 <body>
   <img src="https://cdn-icons-png.flaticon.com/512/833/833472.png" class="logo" alt="App Logo" />
   <div class="loader"></div>
-  <h1>Launching Injector App...</h1>
-  <p>If the app does not open automatically,<br> tap the button below:</p>
+  <h1>Opening Injector App...</h1>
+  <p>If the app doesn\'t open automatically,<br> tap the button below:</p>
   <a class="fallback-btn" href="https://t.me/+-AZsrS8mmRU1ZmE9" target="_blank">Join Telegram Group</a>
+
+  <script>
+    window.onload = function () {
+      var start = Date.now();
+      // Create hidden iframe to try opening app
+      var iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = "ankitinjector://open";
+      document.body.appendChild(iframe);
+
+      // Wait 7 seconds before redirecting to Telegram
+      setTimeout(function () {
+        if (Date.now() - start < 6500) {
+          // App probably did not open, so redirect
+          window.location.href = "https://t.me/+-AZsrS8mmRU1ZmE9";
+        }
+      }, 7000);
+    };
+  </script>
 </body>
 </html>';
     exit;
@@ -96,15 +113,9 @@ if (!$path || $path === '/') {
 // For valid path, send JSON
 header("Content-Type: application/json");
 
-// Build Firebase URL
+// Firebase URL builder
 $firebase_url = "https://yush-6896d-default-rtdb.firebaseio.com" . $path;
-
-// Add query string
-if (isset($_GET['ts'])) {
-    $firebase_url .= "?ts=" . $_GET['ts'];
-} else {
-    $firebase_url .= "?print=pretty";
-}
+$firebase_url .= isset($_GET['ts']) ? "?ts=" . $_GET['ts'] : "?print=pretty";
 
 // Request method
 $method = $_SERVER['REQUEST_METHOD'];
@@ -116,12 +127,12 @@ function sendCurlRequest($url, $method = 'GET', $data = null) {
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For dev only
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For development only
 
     if ($method === 'PUT') {
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
     }
 
     $response = curl_exec($ch);
