@@ -1,13 +1,16 @@
 <?php
+
+// Basic CORS headers for API
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, PUT, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
 
-// Check path info
+// Check PATH
 $path = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
+
+// If no path is provided, redirect to app
 if (!$path || $path === '/') {
-    // HTML-based redirect to support browser behavior
+    header("Content-Type: text/html"); // ✅ Fix: Show HTML not JSON
     echo '<!DOCTYPE html>
     <html>
     <head>
@@ -22,6 +25,10 @@ if (!$path || $path === '/') {
     exit;
 }
 
+// For valid path, send JSON
+header("Content-Type: application/json");
+
+// Build Firebase URL
 $firebase_url = "https://yush-6896d-default-rtdb.firebaseio.com" . $path;
 
 // Add query string
@@ -31,15 +38,17 @@ if (isset($_GET['ts'])) {
     $firebase_url .= "?print=pretty";
 }
 
+// Request method
 $method = $_SERVER['REQUEST_METHOD'];
 
+// cURL function
 function sendCurlRequest($url, $method = 'GET', $data = null) {
     $ch = curl_init();
 
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // not recommended in production
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For dev
 
     if ($method === 'PUT') {
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
@@ -66,7 +75,7 @@ function sendCurlRequest($url, $method = 'GET', $data = null) {
     return $response;
 }
 
-// Handle methods
+// Handle request
 if ($method === 'GET') {
     echo sendCurlRequest($firebase_url);
 } elseif ($method === 'PUT') {
