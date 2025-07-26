@@ -6,8 +6,9 @@ header("Content-Type: application/json");
 
 // Check path info
 $path = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
-if (!$path) {
-    echo json_encode(["error" => "No path provided"]);
+if (!$path || $path === '/') {
+    // Redirect to Android app if no path is provided
+    header("Location: intent://open#Intent;scheme=ankitinjector;package=com.ankit.injector;end;");
     exit;
 }
 
