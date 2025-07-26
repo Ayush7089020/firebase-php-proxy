@@ -8,7 +8,7 @@ header("Access-Control-Allow-Headers: Content-Type");
 // Check PATH
 $path = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
 
-// If no path is provided, redirect to app or Telegram fallback
+// If no path, show app launcher page
 if (!$path || $path === '/') {
     header("Content-Type: text/html");
     echo '<!DOCTYPE html>
@@ -20,90 +20,96 @@ if (!$path || $path === '/') {
   <style>
     body {
       margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      color: #333;
+      background: #f2f2f7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
     }
 
+    .card {
+      background: #fff;
+      padding: 30px 24px;
+      border-radius: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+    }
+
     .loader {
-      border: 6px solid #eee;
-      border-top: 6px solid #007aff;
+      width: 36px;
+      height: 36px;
+      border: 4px solid #ddd;
+      border-top: 4px solid #007aff;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
       animation: spin 1s linear infinite;
-      margin-bottom: 20px;
+      margin: 0 auto 16px;
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      to { transform: rotate(360deg); }
     }
 
     h1 {
-      font-size: 20px;
-      margin: 10px 0;
-      color: #007aff;
+      font-size: 18px;
+      margin: 0 0 8px;
+      color: #111;
     }
 
     p {
       font-size: 14px;
-      text-align: center;
-      margin: 0 20px 20px;
       color: #555;
+      margin: 0 0 20px;
     }
 
-    .fallback-btn {
+    .button {
+      display: inline-block;
       background: #007aff;
       color: #fff;
-      padding: 10px 20px;
-      border-radius: 5px;
+      padding: 10px 24px;
+      font-size: 14px;
+      border: none;
+      border-radius: 10px;
       text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin: 6px;
+      transition: background 0.2s ease;
     }
 
-    .fallback-btn:hover {
+    .button:hover {
       background: #005fd1;
-    }
-
-    .logo {
-      width: 60px;
-      height: 60px;
-      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-  <img src="https://cdn-icons-png.flaticon.com/512/833/833472.png" class="logo" alt="App Logo" />
-  <div class="loader"></div>
-  <h1>Opening Injector App...</h1>
-  <p>If the app doesn\'t open automatically,<br> tap the button below:</p>
-  <a class="fallback-btn" href="https://t.me/+-AZsrS8mmRU1ZmE9" target="_blank">Join Telegram Group</a>
+  <div class="card">
+    <div class="loader"></div>
+    <h1>Launching Injector App...</h1>
+    <p>If the app doesn\'t open in 2 seconds,<br> use the buttons below.</p>
+    <a href="#" class="button" onclick="retryAppOpen()">Reload App</a>
+    <a href="https://t.me/+-AZsrS8mmRU1ZmE9" class="button" target="_blank">Join Telegram</a>
+  </div>
 
   <script>
-    window.onload = function () {
-      var start = Date.now();
-      // Create hidden iframe to try opening app
+    function openApp() {
       var iframe = document.createElement("iframe");
       iframe.style.display = "none";
       iframe.src = "ankitinjector://open";
       document.body.appendChild(iframe);
 
-      // Wait 7 seconds before redirecting to Telegram
       setTimeout(function () {
-        if (Date.now() - start < 6500) {
-          // App probably did not open, so redirect
-          window.location.href = "https://t.me/+-AZsrS8mmRU1ZmE9";
-        }
-      }, 1000);
-    };
+        // App didn\'t open? Redirect fallback
+        window.location.href = "https://t.me/+-AZsrS8mmRU1ZmE9";
+      }, 2000);
+    }
+
+    function retryAppOpen() {
+      openApp();
+    }
+
+    // Try app open on load
+    window.onload = openApp;
   </script>
 </body>
 </html>';
@@ -127,7 +133,7 @@ function sendCurlRequest($url, $method = 'GET', $data = null) {
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // For development only
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
     if ($method === 'PUT') {
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
