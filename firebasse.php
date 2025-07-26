@@ -7,8 +7,18 @@ header("Content-Type: application/json");
 // Check path info
 $path = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
 if (!$path || $path === '/') {
-    // Redirect to Android app if no path is provided
-    header("Location: intent://open#Intent;scheme=ankitinjector;package=com.ankit.injector;end;");
+    // HTML-based redirect to support browser behavior
+    echo '<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Redirecting...</title>
+        <meta http-equiv="refresh" content="0; url=intent://open#Intent;scheme=ankitinjector;package=com.ankit.injector;end;">
+    </head>
+    <body>
+        <p>Opening app...</p>
+    </body>
+    </html>';
     exit;
 }
 
